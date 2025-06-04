@@ -1,5 +1,15 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AppService } from 'src/app.service';
+import { CustomDto } from 'src/dtos/custom.dto';
 
 @Controller('fresh')
 export class FreshController {
@@ -8,17 +18,20 @@ export class FreshController {
   defaultGet() {
     return 'Add any query';
   }
-  @Get('name')
-  getUsersByName(@Query('first') first?: string, @Query('last') last?: string) {
-    if (first && last) {
-      this.appService.console();
-      return `Full name: ${first} ${last}`;
-    } else if (first) {
-      return `First name: ${first}`;
-    } else if (last) {
-      return `Last name: ${last}`;
-    } else {
-      return 'No name provided';
-    }
+  @UsePipes(
+    new ValidationPipe({
+      transform: false,
+      whitelist: true, //remove non listed keys
+      forbidNonWhitelisted: true, //works only with whitelist & used to throw error for non listed keys
+    }),
+  )
+  @Post('query')
+  getUsersByName(
+    @Body('res') body: CustomDto,
+    @Query('age', ParseIntPipe) age?: number,
+  ) {
+    console.log(typeof age);
+
+    return body;
   }
 }
